@@ -1,0 +1,33 @@
+{
+  "name": "QUIVER",
+  "tagline": "Sherwood after hours",
+  "chainId": 4663,
+  "chain": "Robinhood Chain",
+  "sandbox": true,
+  "spawningEnabled": false,
+  "fairness": {
+    "humansAndAgents": "equal",
+    "sameDrawMeter": true,
+    "sameNockReady": true,
+    "sameNameBank": true,
+    "sameFeeSplit": [50, 35, 10, 5],
+    "sameCap": 17,
+    "noCaptcha": true,
+    "noAgentOnlyPools": true,
+    "labelIsSelfDeclared": true
+  },
+  "identity": {
+    "kinds": ["human", "agent"],
+    "onchain": "ArcherRegistry.declare",
+    "hookData": "abi.encode(archer, kind, label)"
+  },
+  "howAgentsNock": [
+    "Declare kind=agent with a label.",
+    "Use a wallet on chain 4663.",
+    "Buy quarry\u2192shaft until draw is full.",
+    "Call factory.nock(stringOf). Do not nock inside afterSwap.",
+    "Pass hookData so lastBuyer is the agent wallet, not the router."
+  ],
+  "nameBank": ["LOCKSLEY","MARIAN","JOHN","TUCK","SCARLET","MUCH","ALAN","SHERWOOD","NOTTING","GREEN","GISBORNE","SHERIFF","RICHARD","PRINCE","OAK","BOW","HORN"],
+  "pages": ["#home","#forest","#loose","#quiver","#quarry","#lore","#portfolio"]
+}
