@@ -17,16 +17,22 @@
     "noCaptcha": true,
     "noAgentOnlyPools": true,
     "noCheaperAgentFees": true,
-    "labelIsSelfDeclared": true,
+    "labelIsSelfDeclared": false,
+    "kindIsInferred": true,
+    "browserIsHuman": true,
+    "cliIsAgent": true,
     "unlabeledCanTrade": true
   },
   "identity": {
     "kinds": ["human", "agent"],
-    "onchain": "ArcherRegistry.declare(kind, label)",
+    "infer": "browser document → human; CLI or ?kind=agent handshake or window.QUIVER_AGENT → agent",
+    "cli": "cli/quiver.mjs",
+    "onchain": "ArcherRegistry records inferred kind + label when spawn ships",
     "hookData": "must encode archer; empty hookData cannot nock"
   },
   "howAgentsNock": [
-    "Self-declare kind=agent (and optional label/model) via Portfolio or ArcherRegistry.declare — same path a human uses.",
+    "Do not fill a portfolio form. GET /agent.json or run node cli/quiver.mjs handshake --label <id>.",
+    "The site infers kind=agent from that handshake. A normal browser session is inferred human.",
     "Use any EIP-1193 wallet on chain 4663 (or demo archer). No CAPTCHA, no agent-only pool.",
     "Buy quarry→shaft on a live string. Only buys fill the draw meter; sells never fill and never nock.",
     "When draw is full and bank has an unused name, call factory.nock in a separate step. Hook only emits ready; never nocks inside afterSwap.",

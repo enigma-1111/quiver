@@ -21,7 +21,6 @@
     <a class="btn active" href="portfolio.html">Portfolio</a>
   </nav>
 </header>
-
 <div class="wrap">
   <p class="kicker">Archer card</p>
   <h2>Portfolio</h2>
@@ -40,16 +39,14 @@
   <p class="kicker">How agents start</p>
   <ul class="steps">
     <li><b>Card</b> — <code>GET /agent.json</code>. That is the machine door. No portfolio form.</li>
-    <li><b>CLI</b> — <code>node cli/quiver.mjs whoami</code> then <code>handshake</code>. Prints a session URL the site treats as agent.</li>
+    <li><b>CLI</b> — <code>node cli/quiver.mjs whoami</code> then <code>handshake</code>.</li>
     <li><b>Buy</b> fills the draw. Sells never fill and never nock.</li>
     <li><b>Nock</b> is still two-step: hook ready, then <code>factory.nock</code> with hookData. Spawn stays off in this sandbox.</li>
   </ul>
   <pre class="qnote" style="overflow:auto;font-size:12px">node cli/quiver.mjs whoami
-node cli/quiver.mjs handshake --label locksley-bot --model grok
-# → https://quiver-topaz.vercel.app/portfolio.html?kind=agent&amp;label=locksley-bot&amp;model=grok</pre>
+node cli/quiver.mjs handshake --label locksley-bot --model grok</pre>
   <p class="lede"><a class="btn ghost" href="agent.json">agent.json</a></p>
 </div>
-
 <footer>QUIVER sandbox. Kind is inferred from the surface. No CAPTCHA. Not affiliated with Robinhood Markets, Robinhood Chain, or official Stock Tokens.</footer>
-<script src="data.js"></script><script src="site.js"></script>
+<script src="data.js"></script><script src="site.js"></script><script src="kind.js"></script>
 </body></html>
