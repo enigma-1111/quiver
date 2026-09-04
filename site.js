@@ -139,10 +139,26 @@
       }
     });
   }
+  function nockReason(a, nxt, count) {
+    if (!state.connected) return { can: false, lab: "Connect to nock", why: "Connect (or open demo) to buy and nock." };
+    if (!nxt) return { can: false, lab: "Bank empty", why: "Name bank empty — all 17 famous-first names are loosed. Nock fails until the bank resets." };
+    if (count >= state.maxShafts) return { can: false, lab: "Cap reached", why: "Shaft cap reached (" + count + "/" + state.maxShafts + "). Factory will not nock more this sandbox." };
+    if (a.draw < a.drawTarget) return { can: false, lab: "Need " + (a.drawTarget - a.draw) + " more", why: "Need " + (a.drawTarget - a.draw) + " more draw on " + a.symbol + ". Buys fill the meter; sells never do. Next: " + nxt[0] + " · " + bankRemaining() + " left." };
+    return { can: true, lab: "Nock " + nxt[0], why: "Draw full on " + a.symbol + ". Nock looses " + nxt[0] + " (" + bankRemaining() + " remaining in bank)." };
+  }
+  function paintNock() {
+    const a = state.shafts[state.selected]; if (!a) return;
+    const nxt = nextName(); const count = Object.keys(state.shafts).length;
+    const r = nockReason(a, nxt, count);
+    document.querySelectorAll("[data-nock]").forEach(el => { el.disabled = !r.can; el.textContent = r.lab; el.title = r.why; });
+    const hint = document.getElementById("nock-hint");
+    if (hint) hint.textContent = r.why;
+  }
   function paint() {
     paintWallet();
     paintLists();
     paintPortfolio();
+    paintNock();
     if (document.getElementById("forest")) paintForest();
   }
   function buy() {
@@ -163,11 +179,9 @@
     paint();
   }
   function nock() {
-    if (!state.connected) return toast("Connect first");
-    const p = state.shafts[state.selected], n = nextName();
-    if (!n) return toast("Name bank empty");
-    if (Object.keys(state.shafts).length >= state.maxShafts) return toast("Shaft cap reached");
-    if (p.draw < p.drawTarget) return toast("Need " + (p.drawTarget - p.draw) + " more · buy fills, sell does not");
+    const p = state.shafts[state.selected], n = nextName(), count = Object.keys(state.shafts).length;
+    const r = nockReason(p, n, count);
+    if (!r.can) return toast(r.lab);
     state.shafts[n[0]] = shaft(n[0], n[1], p.symbol, p.generation + 1, me(), 0, p.hit ? p.drawTarget + 20 : 100 + p.generation * 10, false, 0, 250, state.kind || "unset");
     p.draw = 0; state.larder += 0.01; state.selected = n[0];
     state.log.unshift("Nocked " + n[0] + " from " + p.symbol + (state.kind !== "unset" ? " · " + state.kind : ""));
@@ -239,17 +253,6 @@
     const a = state.shafts[state.selected]; if (!a) return;
     const nxt = nextName(); const count = Object.keys(state.shafts).length;
     const vis = visibleShafts();
-    const can = a.draw >= a.drawTarget && count < state.maxShafts && !!nxt && state.connected;
-    const lab = !state.connected ? "Connect to nock" : can ? ("Nock " + nxt[0]) : nxt ? "Draw not full" : "Bank empty";
-    document.querySelectorAll("[data-nock]").forEach(el => { el.disabled = !can; el.textContent = lab; });
-    const hint = document.getElementById("nock-hint");
-    if (hint) {
-      const left = bankRemaining();
-      if (!state.connected) hint.textContent = "Connect (or demo) to buy and nock. Bank has " + left + " unused names (famous first, no Q prefix).";
-      else if (!nxt) hint.textContent = "Name bank empty — no more shafts this sprint.";
-      else if (a.draw < a.drawTarget) hint.textContent = "Need " + (a.drawTarget - a.draw) + " more draw on " + a.symbol + ". Buys fill; sells never do. Next: " + nxt[0] + " · " + left + " left.";
-      else hint.textContent = "Draw full on " + a.symbol + ". Nock looses " + nxt[0] + " (" + left + " remaining in bank).";
-    }
     document.querySelectorAll("#quarry-filters [data-quarry]").forEach(btn => {
       btn.classList.toggle("on", (btn.getAttribute("data-quarry") || "") === (state.quarryFilter || "ALL"));
     });
