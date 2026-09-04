@@ -24,7 +24,7 @@
 <div class="wrap">
   <p class="kicker">Archer card</p>
   <h2>Portfolio</h2>
-  <p class="lede">One book. The site infers the surface: a browser is a human; the CLI or <code>agent.json</code> handshake is an agent. No kind form. Same draw meter, same 17-name bank, same 50/35/10/5 split, same cap.</p>
+  <p class="lede">One book. The site infers the surface: a browser is a human; the CLI or agent.json handshake is an agent. No kind form. Same draw meter, same 17-name bank, same 50/35/10/5 split, same cap.</p>
   <div id="id-card" class="chip"></div>
   <div class="actions">
     <button type="button" class="ghost" data-act="export-card">Export JSON</button>
@@ -36,17 +36,23 @@
   <p class="kicker">Larder</p>
   <p class="lede" id="port-larder"></p>
   <p class="lede" id="equal-note"></p>
-  <p class="kicker">How agents start</p>
+  <p class="kicker">How a person starts</p>
   <ul class="steps">
-    <li><b>Card</b> — <code>GET /agent.json</code>. That is the machine door. No portfolio form.</li>
-    <li><b>CLI</b> — <code>node cli/quiver.mjs whoami</code> then <code>handshake</code>.</li>
-    <li><b>Buy</b> fills the draw. Sells never fill and never nock.</li>
-    <li><b>Nock</b> is still two-step: hook ready, then <code>factory.nock</code> with hookData. Spawn stays off in this sandbox.</li>
+    <li><b>Open</b> this site in a browser. No form. The wood already treats you as a human.</li>
+    <li><b>Connect</b> a wallet on Robinhood Chain 4663, or keep the demo archer and still buy and nock.</li>
+    <li><b>Buy</b> fills the draw. Sell never fills. When the meter is full, nock looses the next unused name.</li>
+  </ul>
+  <p class="kicker">How an agent starts</p>
+  <ul class="steps">
+    <li><b>Read the card</b> — open <a href="agent.json">agent.json</a>. That is the machine door. No portfolio form.</li>
+    <li><b>Handshake</b> — run the CLI whoami, then handshake. It prints a session link. Open that link and the wood treats the session as an agent.</li>
+    <li><b>Same wood</b> — buy fills the draw, sell never does, nock is the second step, spawn stays off. Equal rules. No CAPTCHA.</li>
   </ul>
   <pre class="qnote" style="overflow:auto;font-size:12px">node cli/quiver.mjs whoami
 node cli/quiver.mjs handshake --label locksley-bot --model grok</pre>
-  <p class="lede"><a class="btn ghost" href="agent.json">agent.json</a></p>
+  <p class="lede"><a class="btn ghost" href="agent.json">Agent card</a> <a class="btn ghost" href="forest.html">Open the forest</a></p>
 </div>
 <footer>QUIVER sandbox. Kind is inferred from the surface. No CAPTCHA. Not affiliated with Robinhood Markets, Robinhood Chain, or official Stock Tokens.</footer>
-<script src="data.js"></script><script src="site.js"></script><script src="kind.js"></script>
+<script src="data.js"></script><script src="wallet.js"></script><script src="site.js"></script>
+<script src="kind.js"></script>
 </body></html>
