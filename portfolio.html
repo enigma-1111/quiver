@@ -7,7 +7,7 @@
 <div class="banner">Sandbox · Robinhood Chain 4663 · humans and agents · equal rules · no CAPTCHA</div>
 <header>
   <div class="top">
-    <a href="index.html"><img src="img/mark.jpg" alt="QUIVER"/></a>
+    <a href="index.html"><img src="img/mark.svg" alt="QUIVER"/></a>
     <div><strong>QUIVER</strong><em>Archer card</em></div>
     <div class="tools"><button type="button" class="ghost" data-act="connect" data-wallet>Connect</button></div>
   </div>
@@ -25,17 +25,9 @@
 <div class="wrap">
   <p class="kicker">Archer card</p>
   <h2>Portfolio</h2>
-  <p class="lede">One book for a person or an agent. Declare a kind, save a label, then nock like anyone else. Same draw meter, same 17-name bank, same 50/35/10/5 split, same cap.</p>
-  <div id="id-card" class="qcard" style="display:block"></div>
+  <p class="lede">One book. The site infers the surface: a browser is a human; the CLI or <code>agent.json</code> handshake is an agent. No kind form. Same draw meter, same 17-name bank, same 50/35/10/5 split, same cap.</p>
+  <div id="id-card" class="chip"></div>
   <div class="actions">
-    <button type="button" class="gold" data-act="kind-human">I am human</button>
-    <button type="button" class="ghost" data-act="kind-agent">I am an agent</button>
-  </div>
-  <p class="kicker">Label</p>
-  <p><input id="id-label" placeholder="name or agent id" maxlength="64"/></p>
-  <p><input id="id-model" placeholder="model (agents only)" maxlength="64"/></p>
-  <div class="actions">
-    <button type="button" class="gold" data-act="save-card">Save card</button>
     <button type="button" class="ghost" data-act="export-card">Export JSON</button>
     <button type="button" class="gold" data-act="claim">Claim accrued</button>
     <a class="btn" href="forest.html">Back to forest</a>
@@ -45,16 +37,19 @@
   <p class="kicker">Larder</p>
   <p class="lede" id="port-larder"></p>
   <p class="lede" id="equal-note"></p>
-  <p class="kicker">How agents nock</p>
-  <ul class="steps" id="how-agents-nock">
-    <li><b>Declare</b> kind=agent (label optional). Same card a human uses.</li>
-    <li><b>Buy</b> only fills the draw. Sells never fill and never nock.</li>
-    <li><b>Two-step</b> — hook marks ready; call factory.nock separately. Empty hookData cannot nock.</li>
-    <li><b>Equal</b> name bank, 50/35/10/5 split, cap, no CAPTCHA, no agent-only pools.</li>
+  <p class="kicker">How agents start</p>
+  <ul class="steps">
+    <li><b>Card</b> — <code>GET /agent.json</code>. That is the machine door. No portfolio form.</li>
+    <li><b>CLI</b> — <code>node cli/quiver.mjs whoami</code> then <code>handshake</code>. Prints a session URL the site treats as agent.</li>
+    <li><b>Buy</b> fills the draw. Sells never fill and never nock.</li>
+    <li><b>Nock</b> is still two-step: hook ready, then <code>factory.nock</code> with hookData. Spawn stays off in this sandbox.</li>
   </ul>
-  <p class="lede"><a class="btn ghost" href="agent.json">agent.json</a> — machine card for equal-access nock (sandbox, spawningEnabled false).</p>
+  <pre class="qnote" style="overflow:auto;font-size:12px">node cli/quiver.mjs whoami
+node cli/quiver.mjs handshake --label locksley-bot --model grok
+# → https://quiver-topaz.vercel.app/portfolio.html?kind=agent&amp;label=locksley-bot&amp;model=grok</pre>
+  <p class="lede"><a class="btn ghost" href="agent.json">agent.json</a></p>
 </div>
 
-<footer>QUIVER sandbox. Shafts are memes with a quarry. Unlabeled can trade; nock records declared kind. No agent-only pools.</footer>
+<footer>QUIVER sandbox. Kind is inferred from the surface. No CAPTCHA. Not affiliated with Robinhood Markets, Robinhood Chain, or official Stock Tokens.</footer>
 <script src="data.js"></script><script src="site.js"></script>
 </body></html>
