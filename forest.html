@@ -28,14 +28,24 @@
   <section class="stage">
     <canvas id="forest" role="img" aria-label="Forest map of shafts"></canvas>
     <div class="hud">
-      <span id="cap-label"></span>
+      <div class="chip-hud"><span id="hud-count">0</span> shafts</div>
+      <div class="chip-hud"><span id="hud-next">—</span> next</div>
     </div>
+    <div class="filters" id="quarry-filters" role="group" aria-label="Quarry filter">
+      <button type="button" data-quarry="ALL" class="on">All</button>
+      <button type="button" data-quarry="USDG">USDG</button>
+      <button type="button" data-quarry="WETH">WETH</button>
+      <button type="button" data-quarry="HOOD">HOOD</button>
+      <button type="button" data-quarry="NVDA">NVDA</button>
+      <button type="button" data-quarry="SPY">SPY</button>
+    </div>
+    <p class="empty-band" id="forest-empty" hidden>No shafts match this quarry filter. Switch to All or nock a new shaft on a live quarry.</p>
   </section>
   <aside class="panel">
-    <img id="sel-art" class="portrait" src="img/mark.svg" alt=""/>
-    <p class="kicker" id="sel-kicker"></p>
-    <h2 id="sel-name"></h2>
-    <p class="meta" id="sel-sym"></p>
+    <div class="phero">
+      <img id="sel-art" src="img/mark.svg" alt=""/>
+      <div><p class="kicker" id="sel-kicker"></p><h2 id="sel-name">QUIVER</h2><p class="lede" id="sel-sym"></p></div>
+    </div>
     <p class="path" id="sel-path"></p>
     <p class="lede" id="sel-blurb"></p>
     <div class="meter"><i id="meter-fill"></i></div>

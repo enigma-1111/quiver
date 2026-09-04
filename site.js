@@ -8,6 +8,7 @@
     return {
       selected: "QUIVER", connected: false, account: null, demo: true,
       kind: "unset", label: "", model: "",
+      quarryFilter: "ALL",
       maxShafts: 17, larder: 0.031, claimed: 0,
       log: ["Forest opened."],
       shafts: {
@@ -67,6 +68,7 @@
       localStorage.setItem(KEY, JSON.stringify({
         selected: state.selected, connected: state.connected, account: state.account, demo: state.demo,
         kind: state.kind, label: state.label, model: state.model, via: state.via,
+        quarryFilter: state.quarryFilter || "ALL",
         larder: state.larder, claimed: state.claimed, log: state.log, shafts: state.shafts
       }));
     } catch (e) {}
@@ -101,6 +103,10 @@
       state.connected = false; state.account = null; state.demo = true;
       persist(); toast("Disconnected"); return paint();
     }
+    if (state.connected && state.demo) {
+      state.connected = false; state.account = null; state.demo = true;
+      persist(); toast("Demo closed"); return paint();
+    }
     const W = window.QuiverWallet;
     if (!W) {
       state.connected = true; state.demo = true; state.account = null;
@@ -109,30 +115,51 @@
     const res = await W.connect();
     if (res.ok) {
       state.connected = true; state.demo = false; state.account = res.account;
-      persist(); toast("Connected " + W.short(res.account)); paint();
-    } else {
+      toast("Connected on 4663 · " + W.short(res.account));
+    } else if (res.reason === "no_provider") {
       state.connected = true; state.demo = true; state.account = null;
-      persist(); toast(res.error || "Demo archer"); paint();
+      toast("No wallet · demo archer");
+    } else {
+      toast(res.reason || "Wallet rejected");
     }
+    persist(); paint();
+  }
+  function paintWallet() {
+    const W = window.QuiverWallet;
+    document.querySelectorAll("[data-wallet]").forEach(el => {
+      if (!state.connected) {
+        el.textContent = "Connect";
+        el.title = "Connect wallet or use demo";
+      } else if (state.demo) {
+        el.textContent = "Demo archer";
+        el.title = "Tap to close demo";
+      } else {
+        el.textContent = W ? W.short(state.account) : (state.account.slice(0,6)+"…"+state.account.slice(-4));
+        el.title = "Tap to disconnect · chain 4663";
+      }
+    });
+  }
+  function paint() {
+    paintWallet();
+    paintLists();
+    paintPortfolio();
+    if (document.getElementById("forest")) paintForest();
   }
   function buy() {
     if (!state.connected) return toast("Connect first");
-    const p = state.shafts[state.selected];
-    if (!p) return;
-    p.draw = Math.min(p.drawTarget, p.draw + 14);
-    p.bag = (p.bag || 0) + 50;
-    state.log.unshift("Buy on " + p.symbol + " · draw " + p.draw + "/" + p.drawTarget + (p.draw >= p.drawTarget ? " FULL" : ""));
-    persist();
-    toast(p.draw >= p.drawTarget ? "Draw FULL · ready to nock" : "Buy +14 draw");
+    const a = state.shafts[state.selected];
+    a.draw = Math.min(a.drawTarget, a.draw + 14); a.fees += 0.004; state.larder += 0.001;
+    if (a.draw >= a.drawTarget && a.generation >= 1 && a.drawTarget >= 120) a.hit = true;
+    state.log.unshift("Buy " + a.symbol + " · draw " + a.draw + "/" + a.drawTarget);
+    persist(); toast(a.draw >= a.drawTarget ? "Buy · draw FULL" : "Buy · draw fills");
     paint();
   }
   function sell() {
     if (!state.connected) return toast("Connect first");
-    const p = state.shafts[state.selected];
-    if (!p) return;
-    state.log.unshift("Sell on " + p.symbol + " · draw does not fill");
-    persist();
-    toast("Sell · draw does not fill");
+    const a = state.shafts[state.selected];
+    a.fees += 0.003;
+    state.log.unshift("Sell " + a.symbol + " · draw unchanged " + a.draw + "/" + a.drawTarget);
+    persist(); toast("Sell · draw does not fill");
     paint();
   }
   function nock() {
@@ -154,96 +181,54 @@
     state.claimed += s; persist(); toast(s ? "Claimed " + s.toFixed(3) : "Nothing to claim");
     paint();
   }
-  function paint() {
-    document.querySelectorAll("[data-act]").forEach(el => {
-      const act = el.getAttribute("data-act");
-      el.onclick = act === "connect" ? connect : act === "buy" ? buy : act === "sell" ? sell : act === "nock" ? nock : act === "claim" ? claim : null;
-    });
-    document.querySelectorAll("[data-wallet]").forEach(el => {
-      if (state.connected && !state.demo && state.account) {
-        el.textContent = window.QuiverWallet ? window.QuiverWallet.short(state.account) : state.account.slice(0, 6) + "…";
-        el.title = "Tap to disconnect";
-      } else if (state.connected && state.demo) {
-        el.textContent = "Demo";
-        el.title = "Demo archer · connect real wallet";
-      } else {
-        el.textContent = "Connect";
-        el.title = "Connect wallet or use demo";
-      }
-    });
-    const log = document.getElementById("log-list");
-    if (log) log.innerHTML = (state.log || []).map(m => "<li><span>" + m + "</span></li>").join("");
-    paintForest();
-    paintPortfolio();
-    const hold = document.getElementById("hold-list");
-    if (hold) {
-      const list = Object.values(state.shafts).filter(x => x.archer === me() || (state.demo && x.archer === "demo"));
-      hold.innerHTML = list.map(x => "<li><span>" + x.symbol + "</span><span class='meta'>bag " + (x.bag || 0) + " · fees " + (x.fees || 0).toFixed(3) + "</span></li>").join("") || "<li class='meta'>Nock to fill this quiver</li>";
-    }
-    const claimBtn = document.querySelector("[data-act=claim]");
-    if (claimBtn) {
-      let s = 0;
-      Object.values(state.shafts).forEach(x => { if (x.archer === me() || (state.demo && x.archer === "demo")) s += x.fees; });
-      claimBtn.textContent = s ? "Claim " + s.toFixed(3) : "Claim";
-      claimBtn.disabled = !s;
-    }
-    const lar = document.getElementById("larder-line");
-    if (lar) lar.textContent = state.larder.toFixed(3) + " quarry locked · claimed " + state.claimed.toFixed(3);
+  function refresh() {
+    const keep = { connected: state.connected, account: state.account, demo: state.demo };
+    localStorage.removeItem(KEY); state = Object.assign(seed(), keep);
+    const inferred = inferSurface();
+    state.kind = inferred.kind; state.via = inferred.via;
+    if (inferred.kind === "agent") { state.label = inferred.label; state.model = inferred.model; }
+    persist(); toast("Forest refreshed"); paint();
   }
+
   function layout() {
-    const canvas = document.getElementById("forest");
-    if (!canvas) return {};
-    const r = canvas.getBoundingClientRect();
-    const cx = r.width / 2, cy = r.height / 2;
-    const nodes = { QUIVER: { x: cx, y: cy } };
-    const gens = {};
-    Object.values(state.shafts).forEach(a => {
-      if (a.symbol === "QUIVER") return;
-      const g = a.generation || 1;
-      if (!gens[g]) gens[g] = [];
-      gens[g].push(a.symbol);
-    });
-    Object.keys(gens).sort((a, b) => a - b).forEach(g => {
-      const ring = gens[g];
-      const rad = Math.min(r.width, r.height) * (0.18 + 0.12 * (g - 1));
-      ring.forEach((sym, i) => {
-        const ang = (i / ring.length) * Math.PI * 2 - Math.PI / 2;
-        nodes[sym] = { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
+    const c = document.getElementById("forest"); if (!c) return {};
+    const w = c.clientWidth, h = c.clientHeight, cx = w * 0.5, cy = h * 0.52;
+    const scale = Math.max(0.62, Math.min(w / 420, h / 380, 1.25));
+    const out = { QUIVER: { x: cx, y: cy } };
+    function place(sym, depth) {
+      const kids = band(sym);
+      kids.forEach((k, i) => {
+        const ring = 52 * k.generation * scale, slice = Math.PI * 1.5, start = -slice / 2 - 0.2;
+        const ang = start + (slice * (i + 1)) / (kids.length + 1) + depth * 0.08;
+        out[k.symbol] = { x: cx + Math.cos(ang) * (64 * scale + ring), y: cy + Math.sin(ang) * (46 * scale + ring * 0.8) };
+        place(k.symbol, depth + 1);
       });
-    });
-    return nodes;
+    }
+    place("QUIVER", 0); return out;
+  }
+  function visibleShafts() {
+    const f = state.quarryFilter || "ALL";
+    return Object.values(state.shafts).filter(a => f === "ALL" || a.quarry === f || a.symbol === "QUIVER");
   }
   function drawForest() {
-    const canvas = document.getElementById("forest");
-    if (!canvas) return;
+    const canvas = document.getElementById("forest"); if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-    const r = canvas.getBoundingClientRect();
-    canvas.width = r.width * dpr; canvas.height = r.height * dpr;
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, r.width, r.height);
+    const dpr = window.devicePixelRatio || 1; const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    canvas.width = w * dpr; canvas.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const cx = w * 0.5, cy = h * 0.52;
+    for (let i = 4; i >= 1; i--) { ctx.beginPath(); ctx.arc(cx, cy, 52 * i, 0, Math.PI * 2); ctx.strokeStyle = "rgba(212,180,90," + (0.1 + i * 0.04) + ")"; ctx.stroke(); }
     const nodes = layout();
-    // rings
-    const maxG = Math.max(0, ...Object.values(state.shafts).map(a => a.generation || 0));
-    for (let g = 1; g <= Math.max(3, maxG + 1); g++) {
-      const rad = Math.min(r.width, r.height) * (0.18 + 0.12 * (g - 1));
-      ctx.beginPath(); ctx.arc(r.width / 2, r.height / 2, rad, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(110,224,138,0.12)"; ctx.lineWidth = 1; ctx.stroke();
-    }
-    // center glow
-    const grd = ctx.createRadialGradient(r.width / 2, r.height / 2, 0, r.width / 2, r.height / 2, 40);
-    grd.addColorStop(0, "rgba(212,180,90,0.25)"); grd.addColorStop(1, "transparent");
-    ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(r.width / 2, r.height / 2, 40, 0, Math.PI * 2); ctx.fill();
-    // edges
-    Object.values(state.shafts).forEach(a => {
-      if (!a.stringOf || !nodes[a.symbol] || !nodes[a.stringOf]) return;
-      const from = nodes[a.stringOf], to = nodes[a.symbol];
-      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
-      ctx.strokeStyle = "rgba(212,180,90,0.35)"; ctx.lineWidth = 1.2; ctx.stroke();
+    const vis = visibleShafts();
+    const visSet = new Set(vis.map(a => a.symbol));
+    vis.forEach(a => {
+      if (!a.stringOf || !nodes[a.stringOf] || !nodes[a.symbol] || !visSet.has(a.stringOf)) return;
+      ctx.beginPath(); ctx.moveTo(nodes[a.stringOf].x, nodes[a.stringOf].y); ctx.lineTo(nodes[a.symbol].x, nodes[a.symbol].y);
+      ctx.strokeStyle = "rgba(110,224,138,.35)"; ctx.stroke();
     });
-    // nodes
     ctx.textAlign = "center"; ctx.font = "11px ui-sans-serif,system-ui";
-    Object.values(state.shafts).forEach(a => {
+    vis.forEach(a => {
       const n = nodes[a.symbol]; if (!n) return; const sel = a.symbol === state.selected;
       ctx.beginPath(); ctx.arc(n.x, n.y, sel ? 15 : 10, 0, Math.PI * 2);
       ctx.fillStyle = a.hit ? "#6ee08a" : sel ? "#d4b45a" : "#1d3a24"; ctx.fill(); ctx.strokeStyle = "#d4b45a"; ctx.stroke();
@@ -253,6 +238,7 @@
   function paintForest() {
     const a = state.shafts[state.selected]; if (!a) return;
     const nxt = nextName(); const count = Object.keys(state.shafts).length;
+    const vis = visibleShafts();
     const can = a.draw >= a.drawTarget && count < state.maxShafts && !!nxt && state.connected;
     const lab = !state.connected ? "Connect to nock" : can ? ("Nock " + nxt[0]) : nxt ? "Draw not full" : "Bank empty";
     document.querySelectorAll("[data-nock]").forEach(el => { el.disabled = !can; el.textContent = lab; });
@@ -263,6 +249,14 @@
       else if (!nxt) hint.textContent = "Name bank empty — no more shafts this sprint.";
       else if (a.draw < a.drawTarget) hint.textContent = "Need " + (a.drawTarget - a.draw) + " more draw on " + a.symbol + ". Buys fill; sells never do. Next: " + nxt[0] + " · " + left + " left.";
       else hint.textContent = "Draw full on " + a.symbol + ". Nock looses " + nxt[0] + " (" + left + " remaining in bank).";
+    }
+    document.querySelectorAll("#quarry-filters [data-quarry]").forEach(btn => {
+      btn.classList.toggle("on", (btn.getAttribute("data-quarry") || "") === (state.quarryFilter || "ALL"));
+    });
+    const emptyEl = document.getElementById("forest-empty");
+    if (emptyEl) {
+      const showEmpty = (state.quarryFilter || "ALL") !== "ALL" && vis.length <= 1;
+      emptyEl.hidden = !showEmpty;
     }
     if (!document.getElementById("sel-name")) { drawForest(); return; }
     document.getElementById("sel-art").src = art(a.symbol);
@@ -276,7 +270,7 @@
     document.getElementById("cap-label").textContent = count + " / " + state.maxShafts;
     const nt = nxt ? ("Next shaft: " + nxt[1] + " · " + nxt[0]) : "Name bank empty";
     const nn = document.getElementById("next-name"); if (nn) nn.textContent = nt;
-    const hudC = document.getElementById("hud-count"); if (hudC) hudC.textContent = String(count);
+    const hudC = document.getElementById("hud-count"); if (hudC) hudC.textContent = String(vis.length);
     const hudN = document.getElementById("hud-next"); if (hudN) hudN.textContent = nxt ? nxt[0] : "—";
     const bandEl = document.getElementById("band-list");
     if (bandEl) bandEl.innerHTML = band(a.symbol).map(c => "<li><a href='shaft.html?id="+c.symbol+"'>"+c.name+"</a>"+(c.hit?" <em class='hit'>HIT</em>":"")+"<span class='meta'>"+c.symbol+"</span></li>").join("") || "<li><span class='meta'>No shafts in this band</span></li>";
@@ -304,9 +298,75 @@
   }
   function setKind() { /* kind is inferred; buttons removed */ }
   function saveCard() { toast("Card is inferred — nothing to save"); }
+  function exportCard() {
+    const payload = {
+      protocol: "QUIVER", chainId: 4663, sandbox: true, spawningEnabled: false,
+      kind: state.kind, label: state.label, model: state.model,
+      account: state.account, demo: state.demo,
+      holdings: Object.values(state.shafts).filter(x => x.archer === me() || (state.demo && x.archer === "demo")),
+      larder: state.larder, claimed: state.claimed,
+      fairness: {
+        humansAndAgents: "equal",
+        sameDrawMeter: true,
+        sameNameBank: true,
+        sameFeeSplit: [50, 35, 10, 5],
+        noCaptcha: true,
+        noAgentOnlyPools: true,
+        unlabeledCanTrade: true
+      },
+      howAgentsNock: "Inferred kind. Buy until draw full. factory.nock separate from afterSwap. Non-empty hookData required."
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "quiver-portfolio.json"; a.click();
+    toast("Portfolio JSON exported");
+  }
 
-  window.QuiverForest = { state, paint, connect, buy, sell, nock, claim, nextName, bankRemaining };
-  document.addEventListener("DOMContentLoaded", function () {
+  window.QuiverApp = { state, connect, buy, sell, nock, claim, refresh, paint, paintForest, paintWallet, paintPortfolio, paintLists, drawForest, toast, setKind, saveCard, exportCard };
+  document.addEventListener("click", (ev) => {
+    const fq = ev.target.closest("[data-quarry]");
+    if (fq) {
+      ev.preventDefault();
+      state.quarryFilter = fq.getAttribute("data-quarry") || "ALL";
+      persist();
+      paint();
+      return;
+    }
+    const b = ev.target.closest("[data-act]");
+    if (!b) return;
+    ev.preventDefault();
+    const act = b.getAttribute("data-act");
+    if (act === "connect") connect();
+    if (act === "buy") buy();
+    if (act === "sell") sell();
+    if (act === "nock") nock();
+    if (act === "claim") claim();
+    if (act === "refresh") refresh();
+    if (act === "export-card") exportCard();
+  });
+  function paintLists() {
+    const mine = Object.values(state.shafts).filter(x => x.archer === me() || (state.demo && x.archer === "demo"));
+    const claimable = mine.reduce((s,x)=>s+(x.fees||0),0);
+    const bagTotal = mine.reduce((s,x)=>s+(x.bag||0),0);
+    const qvL = document.getElementById("qv-loosed"); if (qvL) qvL.textContent = String(mine.length);
+    const qvC = document.getElementById("qv-claimable"); if (qvC) qvC.textContent = claimable.toFixed(3);
+    const qvB = document.getElementById("qv-bag"); if (qvB) qvB.textContent = String(bagTotal);
+    const claimBtn = document.getElementById("claim-btn"); if (claimBtn) { claimBtn.disabled = !state.connected || claimable <= 0; claimBtn.textContent = claimable > 0 ? ("Claim " + claimable.toFixed(3)) : "Nothing to claim"; }
+    const hold = document.getElementById("hold-list");
+    if (hold) hold.innerHTML = mine.map(x => "<li><span><a href='shaft.html?id="+x.symbol+"'>"+x.symbol+"</a>"+(x.hit?" · hit":"")+" <span class='meta'>gen "+x.generation+(x.stringOf?" · from "+x.stringOf:"")+"</span></span><span class='meta'>bag "+(x.bag||0)+" · fees "+(x.fees||0).toFixed(3)+"</span></li>").join("") || "<li><span class='meta'>Nock to fill this quiver</span></li>";
+    const qeh = document.getElementById("quiver-empty-hint"); if (qeh) qeh.textContent = mine.length ? "" : "Buy on a string, fill the draw, then nock. Fees and bag appear here after you loose.";
+    const log = document.getElementById("log-list");
+    if (log) log.innerHTML = state.log.slice(0,10).map(m => "<li>"+m+"</li>").join("");
+    const lar = document.getElementById("larder-line");
+    if (lar) lar.textContent = state.larder.toFixed(3) + " quarry locked · claimed " + state.claimed.toFixed(3) + " · lineage larder is shared";
+  }
+  document.addEventListener("error", (ev) => {
+    const el = ev.target;
+    if (!el || el.tagName !== "IMG" || el.dataset.fallback) return;
+    el.dataset.fallback = "1";
+    el.src = "img/mark.svg";
+  }, true);
+  document.addEventListener("DOMContentLoaded", () => {
+    paint();
     if (window.QuiverWallet) {
       window.QuiverWallet.onAccountsChanged(function (addr) {
         if (!addr) {
@@ -355,6 +415,5 @@
       detail.innerHTML = "<img class='portrait' src='"+c.img+"' alt='' /><p class='kicker'>"+c.role+"</p><h2>"+c.name+"</h2><p class='lede'><b>"+c.symbol+"</b> — "+c.lore+"</p><p><a class='btn gold' href='forest.html'>Loose from the forest</a> <a class='btn ghost' href='lore.html'>All shafts</a></p>";
       document.title = c.name + " — QUIVER";
     }
-    paint();
   });
 })();
