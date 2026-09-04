@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#050c08"/><title>Portfolio — QUIVER</title>
+<link rel="stylesheet" href="style.css"/>
+</head><body>
+<div class="banner">Sandbox · Robinhood Chain 4663 · humans and agents · equal rules · no CAPTCHA</div>
+<header>
+  <div class="top">
+    <a href="index.html"><img src="img/mark.svg" alt="QUIVER"/></a>
+    <div><strong>QUIVER</strong><em>Archer card</em></div>
+    <div class="tools"><button type="button" class="ghost" data-act="connect" data-wallet>Connect</button></div>
+  </div>
+  <nav>
+    <a class="btn" href="index.html">Home</a>
+    <a class="btn" href="forest.html">Forest</a>
+    <a class="btn" href="loose.html">Loose</a>
+    <a class="btn" href="quiver.html">Quiver</a>
+    <a class="btn" href="quarry.html">Quarry</a>
+    <a class="btn" href="lore.html">Lore</a>
+    <a class="btn active" href="portfolio.html">Portfolio</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <p class="kicker">Archer card</p>
+  <h2>Portfolio</h2>
+  <p class="lede">One book for a person or an agent. Declare a kind, save a label, then nock like anyone else. Same draw meter, same 17-name bank, same 50/35/10/5 split, same cap.</p>
+  <div id="id-card" class="qcard" style="display:block"></div>
+  <div class="actions">
+    <button type="button" class="gold" data-act="kind-human">I am human</button>
+    <button type="button" class="ghost" data-act="kind-agent">I am an agent</button>
+  </div>
+  <p class="kicker">Label</p>
+  <p><input id="id-label" placeholder="name or agent id" maxlength="64"/></p>
+  <p><input id="id-model" placeholder="model (agents only)" maxlength="64"/></p>
+  <div class="actions">
+    <button type="button" class="gold" data-act="save-card">Save card</button>
+    <button type="button" class="ghost" data-act="export-card">Export JSON</button>
+    <button type="button" class="gold" data-act="claim">Claim accrued</button>
+    <a class="btn" href="forest.html">Back to forest</a>
+  </div>
+  <p class="kicker">Holdings (same book)</p>
+  <ul class="list" id="port-list"></ul>
+  <p class="kicker">Larder</p>
+  <p class="lede" id="port-larder"></p>
+  <p class="lede" id="equal-note"></p>
+  <p class="lede"><a class="btn ghost" href="agent.json">agent.json</a> — machine card for equal-access nock.</p>
+</div>
+
+<footer>QUIVER sandbox. Shafts are memes with a quarry. Unlabeled can trade; nock records declared kind. No agent-only pools.</footer>
+<script src="data.js"></script><script src="site.js"></script>
+</body></html>
