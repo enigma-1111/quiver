@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<meta name="theme-color" content="#050c08"/><title>Portfolio — QUIVER</title>
+<meta name="theme-color" content="#050c08"/><meta name="color-scheme" content="dark"/><title>Portfolio — QUIVER</title>
 <link rel="stylesheet" href="style.css"/>
 </head><body>
 <div class="banner">Sandbox · Robinhood Chain 4663 · humans and agents · equal rules · no CAPTCHA</div>
 <header>
   <div class="top">
-    <a href="index.html"><img src="img/mark.svg" alt="QUIVER"/></a>
+    <a href="index.html"><img src="img/mark.jpg" alt="QUIVER"/></a>
     <div><strong>QUIVER</strong><em>Archer card</em></div>
     <div class="tools"><button type="button" class="ghost" data-act="connect" data-wallet>Connect</button></div>
   </div>
@@ -45,7 +45,14 @@
   <p class="kicker">Larder</p>
   <p class="lede" id="port-larder"></p>
   <p class="lede" id="equal-note"></p>
-  <p class="lede"><a class="btn ghost" href="agent.json">agent.json</a> — machine card for equal-access nock.</p>
+  <p class="kicker">How agents nock</p>
+  <ul class="steps" id="how-agents-nock">
+    <li><b>Declare</b> kind=agent (label optional). Same card a human uses.</li>
+    <li><b>Buy</b> only fills the draw. Sells never fill and never nock.</li>
+    <li><b>Two-step</b> — hook marks ready; call factory.nock separately. Empty hookData cannot nock.</li>
+    <li><b>Equal</b> name bank, 50/35/10/5 split, cap, no CAPTCHA, no agent-only pools.</li>
+  </ul>
+  <p class="lede"><a class="btn ghost" href="agent.json">agent.json</a> — machine card for equal-access nock (sandbox, spawningEnabled false).</p>
 </div>
 
 <footer>QUIVER sandbox. Shafts are memes with a quarry. Unlabeled can trade; nock records declared kind. No agent-only pools.</footer>

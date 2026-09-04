@@ -3,6 +3,8 @@
   "tagline": "Sherwood after hours",
   "chainId": 4663,
   "chain": "Robinhood Chain",
+  "rpc": "https://rpc.mainnet.chain.robinhood.com",
+  "explorer": "https://robinhoodchain.blockscout.com",
   "sandbox": true,
   "spawningEnabled": false,
   "fairness": {
@@ -14,20 +16,34 @@
     "sameCap": 17,
     "noCaptcha": true,
     "noAgentOnlyPools": true,
-    "labelIsSelfDeclared": true
+    "noCheaperAgentFees": true,
+    "labelIsSelfDeclared": true,
+    "unlabeledCanTrade": true
   },
   "identity": {
     "kinds": ["human", "agent"],
-    "onchain": "ArcherRegistry.declare",
-    "hookData": "abi.encode(archer, kind, label)"
+    "onchain": "ArcherRegistry.declare(kind, label)",
+    "hookData": "must encode archer; empty hookData cannot nock"
   },
   "howAgentsNock": [
-    "Declare kind=agent with a label.",
-    "Use a wallet on chain 4663.",
-    "Buy quarry\u2192shaft until draw is full.",
-    "Call factory.nock(stringOf). Do not nock inside afterSwap.",
-    "Pass hookData so lastBuyer is the agent wallet, not the router."
+    "Self-declare kind=agent (and optional label/model) via Portfolio or ArcherRegistry.declare — same path a human uses.",
+    "Use any EIP-1193 wallet on chain 4663 (or demo archer). No CAPTCHA, no agent-only pool.",
+    "Buy quarry→shaft on a live string. Only buys fill the draw meter; sells never fill and never nock.",
+    "When draw is full and bank has an unused name, call factory.nock in a separate step. Hook only emits ready; never nocks inside afterSwap.",
+    "Pass non-empty hookData carrying the agent wallet as archer/lastBuyer so the nock attributes correctly. Empty hookData cannot nock.",
+    "Same 17-name famous-first bank, same 50/35/10/5 split, same maxArrows cap. spawningEnabled stays false in this sandbox."
   ],
-  "nameBank": ["LOCKSLEY","MARIAN","JOHN","TUCK","SCARLET","MUCH","ALAN","SHERWOOD","NOTTING","GREEN","GISBORNE","SHERIFF","RICHARD","PRINCE","OAK","BOW","HORN"],
-  "pages": ["#home","#forest","#loose","#quiver","#quarry","#lore","#portfolio"]
+  "nameBank": ["LOCKSLEY", "MARIAN", "JOHN", "TUCK", "SCARLET", "MUCH", "ALAN", "SHERWOOD", "NOTTING", "GREEN", "GISBORNE", "SHERIFF", "RICHARD", "PRINCE", "OAK", "BOW", "HORN"],
+  "pages": ["index.html", "forest.html", "loose.html", "quiver.html", "quarry.html", "lore.html", "portfolio.html", "shaft.html", "agent.json"],
+  "lexicon": {
+    "Quiver": "root token + protocol",
+    "Shaft": "spawned ERC-20 loosed from a string",
+    "Band": "all shafts loosed from one string",
+    "String": "token a shaft was nocked from",
+    "Archer": "wallet that loosed the shaft",
+    "Quarry": "official stock token or v0 quote (USDG/WETH live)",
+    "Nock": "the spawn action (two-step)",
+    "Greenwood": "forest + protocol treasury"
+  },
+  "disclaimer": "Not affiliated with Robinhood Markets, Robinhood Chain, or official Stock Tokens. Shafts are memes with a quarry."
 }
